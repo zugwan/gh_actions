@@ -1,0 +1,3 @@
+decapod-site
+decapod-manifests
+decapod-bootstrap

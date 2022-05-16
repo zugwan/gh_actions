@@ -1,0 +1,41 @@
+name: merge main with release branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: 'Release Branch'     
+        required: true
+        default: 'release-vX'
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: merge main with release branch
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+          USERNAME: ${{ github.repository_owner }}
+        run: |
+          set -x
+          REL_BRANCH=${{ github.event.inputs.release_branch }} 
+          TAG=${{ github.event.inputs.tag_name }}
+
+          git config --global user.email "taco_support@sk.com"
+          git config --global user.name "Ahn Ahn"
+
+          gh_repo_names=$(cat target_repo_name.txt)
+          for repo_name in ${gh_repo_names}; do
+            echo "Merge commits from $REL_BRANCH into main of ${repo_name}"
+            git clone https://$API_TOKEN_GITHUB@github.com/$USERNAME/${repo_name}.git
+            set +e
+            cd ${repo_name}
+            git merge origin/$REL_BRANCH
+            git push origin 
+            set -e
+            cd -
+          done
